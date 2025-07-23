@@ -1,7 +1,7 @@
 // Widgetbook file: widgetbook.dart
 import 'package:flutter/material.dart';
-import 'package:marble_grouping_game/view/components/card.dart';
-import 'package:marble_grouping_game/view/components/problem_card.dart';
+
+import 'package:marble_grouping_game/view/components/question_card.dart';
 import 'package:marble_grouping_game/view/screen/home_screen.dart';
 import 'package:widgetbook/widgetbook.dart';
 
@@ -44,12 +44,21 @@ class HotReload extends StatelessWidget {
           ],
         ),
 
-         WidgetbookComponent(
-          name: 'Marble Component',
+        WidgetbookComponent(
+          name: 'Question Card',
           useCases: [
             WidgetbookUseCase(
-              name: 'Marble Component 1',
-              builder: (context) => Center(child:ProblemCard()),
+              name: 'Question Card',
+              builder: (context) => Center(child: QuestionCard(questionText: "24 ÷ 3 = ?",)),
+            ),
+          ],
+        ),
+        WidgetbookComponent(
+          name: 'Home Screen',
+          useCases: [
+            WidgetbookUseCase(
+              name: 'hOME Screen',
+              builder: (context) => Center(child: HomeScreen()),
             ),
           ],
         ),

@@ -1,110 +1,61 @@
 import 'package:flutter/material.dart';
-import 'package:marble_grouping_game/model/marble.dart';
-import 'package:marble_grouping_game/model/pocket.dart';
-import 'package:marble_grouping_game/view/components/marble_pocket.dart';
+import 'package:marble_grouping_game/view/components/dialog_card.dart';
+import 'package:marble_grouping_game/view/components/question_card.dart';
+import 'package:marble_grouping_game/view/components/play_area.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  final List<Pocket> listPocketRect = pocketList;
-  List<Marble> marbles = [];
-  int nextGroupId = 0;
-  Marble? selectedMarble;
-
-  @override
-  void initState() {
-    super.initState();
-    marbles = List.generate(5, (index) {
-      return Marble(
-        position: Offset(100.0 + index * 80, 200.0),
-        color: Colors.primaries[index],
-        groupId: nextGroupId++,
-      );
-    });
-  }
-
-  void onDrag(Offset localPosition) {
-    if (selectedMarble == null) return;
-
-    Offset delta = localPosition - selectedMarble!.position;
-
-    // Gerakkan semua kelereng dalam grup yang sama
-    setState(() {
-      for (var marble in marbles) {
-        if (marble.groupId == selectedMarble!.groupId) {
-          marble.position += delta;
-        }
-      }
-
-      selectedMarble!.position = localPosition;
-
-      // Cek penempelan dan gabung grup
-      for (var other in marbles) {
-        if (other == selectedMarble) continue;
-        double distance = (other.position - selectedMarble!.position).distance;
-        if (distance < 60 && other.groupId != selectedMarble!.groupId) {
-          int oldGroup = other.groupId;
-          for (var marble in marbles) {
-            if (marble.groupId == oldGroup) {
-              marble.groupId = selectedMarble!.groupId;
-            }
-          }
-        }
-      }
-    });
+class HomeScreen extends StatelessWidget {
+  HomeScreen({super.key});
+  late Map<int, int> eachPocketMarbleCounts = {};
+  bool checkAnswer(Map<int, int> pocketMarbleCounts) {
+    if (pocketMarbleCounts[1] == 8 &&
+        pocketMarbleCounts[2] == 8 &&
+        pocketMarbleCounts[3] == 8) {
+      return true; // Correct answer
+    } else {
+      return false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GestureDetector(
-        onPanStart: (details) {
-          final localPos = details.localPosition;
-          for (var marble in marbles) {
-            if ((marble.position - localPos).distance < 30) {
-              selectedMarble = marble;
-              break;
-            }
-          }
-        },
-        onPanUpdate: (details) {
-          if (selectedMarble != null) {
-            onDrag(details.localPosition);
-          }
-        },
-        onPanEnd: (_) {
-          if (selectedMarble != null) {
-            int groupId = selectedMarble!.groupId;
-
-            // Cek apakah semua kelereng dalam grup ini masuk ke dalam pocketRect
-            for (var pocket in listPocketRect) {
-              bool allInPocket = marbles
-                  .where((m) => m.groupId == groupId)
-                  .every((m) => pocket.area.contains(m.position));
-
-              if (allInPocket) {
-                int marbleCount = marbles
-                    .where((m) => m.groupId == groupId)
-                    .length;
-                setState(() {
-                  pocket.marbleCount += marbleCount;
-                  print(marbleCount);
-                  marbles.removeWhere((m) => m.groupId == groupId);
-                });
-              }
-            }
-          }
-
-          selectedMarble = null;
-        },
-        child: CustomPaint(
-          size: MediaQuery.of(context).size,
-          painter: MarblePocket(marbles: marbles, pockets: listPocketRect),
+      backgroundColor: const Color(0xFFF2B9EC),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              QuestionCard(questionText: "24 ÷ 3 = "),
+              const SizedBox(height: 20),
+              Expanded(
+                child: PlayArea(
+                  getMarbleCountOnPocket: (Map<int, int> pocketMarbleCount) {
+                    eachPocketMarbleCounts = pocketMarbleCount;
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 30.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                      bool isCorrect = checkAnswer(eachPocketMarbleCounts);
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        if (isCorrect) {
+                          return DialogCard("Benar", "Your Answer is Correct", Icons.check, true);
+                        }
+                        else{
+                        return DialogCard("Salah", "Your Answer is Incorrect", Icons.close, false);
+                        }
+                      },
+                    );
+                  },
+                  child: Text("Check Answer"),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
