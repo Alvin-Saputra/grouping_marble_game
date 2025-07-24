@@ -7,11 +7,12 @@ import '../model/marble.dart';
 class MarbleController extends GetxController {
   var marbles = <Marble>[].obs;
   int nextGroupId = 0;
+  late Size canvasSize; // Tambahkan ini
 
-  void generateMarbles(Size canvasSize, List<Rect> pockets) {
+  void generateMarbles(Size size, List<Rect> pockets) {
+    canvasSize = size; // Simpan ukuran canvas
     final rand = Random();
     final safeDistanceFromPocket = 85.0;
-    // final canvasSize = canvasSize; // Ganti sesuai ukuran sebenarnya
     final marbleRadius = 30.0;
 
     while (marbles.length < 24) {
@@ -48,14 +49,17 @@ class MarbleController extends GetxController {
      update();
   }
 
-void moveGroupedMarbles(Marble selected, Offset delta, Offset newPosition) {
-  for (var marble in marbles) {
-    if (marble.groupId == selected.groupId) {
-      marble.position += delta;
+  void moveGroupedMarbles(Marble selected, Offset delta, Offset newPosition) {
+    for (var marble in marbles) {
+      if (marble.groupId == selected.groupId) {
+        // Terapkan batasan pada posisi marble
+        final newX = (marble.position.dx + delta.dx).clamp(15.0, canvasSize.width - 15.0);
+        final newY = (marble.position.dy + delta.dy).clamp(15.0, canvasSize.height - 15.0);
+        marble.position = Offset(newX, newY);
+      }
     }
+    update(); // agar UI merespon perubahan
   }
-  update(); // agar UI merespon perubahan
-}
 
   void groupMarblesIfNearby(Marble selectedMarble) {
     for (var other in marbles) {

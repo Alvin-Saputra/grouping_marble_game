@@ -111,6 +111,7 @@ class PlayAreaState extends State<PlayArea> {
               pocket.marbles.addAll(groupMarbles);
               marbleController.marbles.removeWhere((m) => m.groupId == groupId);
               widget.getMarbleCountOnPocket(getPocketMarbleCounts());
+              pocketController.update(); 
             }
           }
         }

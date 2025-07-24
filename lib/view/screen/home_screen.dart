@@ -47,61 +47,64 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20.0),
-              ElevatedButton(
-                onPressed: () {
-                  bool isCorrect = checkAnswer(eachPocketMarbleCounts);
-                  Map<int, bool> feedback = answerFeedback(eachPocketMarbleCounts);
-                   playAreaKey.currentState?.showAnswerFeedback(feedback);
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      if (isCorrect) {
-                        return DialogCard(
-                          "Benar",
-                          "Your Answer is Correct",
-                          Icons.check,
-                          true,
-                        );
-                      } else {
-                        return DialogCard(
-                          "Salah",
-                          "Your Answer is Incorrect",
-                          Icons.close,
-                          false,
-                        );
+              SizedBox(
+                width: double.infinity, 
+                child: ElevatedButton(
+                  onPressed: () {
+                    bool isCorrect = checkAnswer(eachPocketMarbleCounts);
+                    Map<int, bool> feedback = answerFeedback(eachPocketMarbleCounts);
+                     playAreaKey.currentState?.showAnswerFeedback(feedback);
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        if (isCorrect) {
+                          return DialogCard(
+                            "Benar",
+                            "Your Answer is Correct",
+                            Icons.check,
+                            true,
+                          );
+                        } else {
+                          return DialogCard(
+                            "Salah",
+                            "Your Answer is Incorrect",
+                            Icons.close,
+                            false,
+                          );
+                        }
+                      },
+                    ).then((_) {
+                      if (!isCorrect) {
+                        // Reset play area jika jawaban salah
+                        playAreaKey.currentState?.resetPlayArea();
                       }
-                    },
-                  ).then((_) {
-                    if (!isCorrect) {
-                      // Reset play area jika jawaban salah
-                      playAreaKey.currentState?.resetPlayArea();
-                    }
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 144, 238, 36),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    side: BorderSide(
-                      color: const Color.fromARGB(
-                        255,
-                        66,
-                        202,
-                        12,
-                      ), // Warna border
-                      width: 3, // Ketebalan border
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 144, 238, 36),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      side: BorderSide(
+                        color: const Color.fromARGB(
+                          255,
+                          66,
+                          202,
+                          12,
+                        ), // Warna border
+                        width: 3, // Ketebalan border
+                      ),
                     ),
+                    elevation: 0,
                   ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  "Check Answer",
-                  style: TextStyle(
-                    color: const Color.fromARGB(255, 2, 116, 12),
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                  child: Text(
+                    "Check Answer",
+                    style: TextStyle(
+                      color: const Color.fromARGB(255, 2, 116, 12),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
