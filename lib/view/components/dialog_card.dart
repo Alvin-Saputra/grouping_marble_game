@@ -17,9 +17,9 @@ class DialogCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      title: Row(
+      title: Column( crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, color: isCorrect ? Colors.green : Colors.red),
+          Icon(icon, color: isCorrect ? Colors.green : Colors.red, size: 100),
           SizedBox(width: 10),
           Text(
             title,
@@ -27,14 +27,23 @@ class DialogCard extends StatelessWidget {
           ),
         ],
       ),
-      content: Text(
-        description,
-        style: TextStyle(fontSize: 16, color: Colors.black54),
+      content: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            description,
+            style: TextStyle(fontSize: 16, color: Colors.black54),
+          ),
+        ],
       ),
       actions: [
-        TextButton(
-          child: Text("OK"),
-          onPressed: () => Navigator.of(context).pop(),
+        Row(mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              child: Text("OK"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
         ),
       ],
     );

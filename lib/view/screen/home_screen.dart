@@ -53,20 +53,20 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () {
                     bool isCorrect = checkAnswer(eachPocketMarbleCounts);
                     Map<int, bool> feedback = answerFeedback(eachPocketMarbleCounts);
-                     playAreaKey.currentState?.showAnswerFeedback(feedback);
+                     
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         if (isCorrect) {
                           return DialogCard(
-                            "Benar",
+                            "Correct",
                             "Your Answer is Correct",
                             Icons.check,
                             true,
                           );
                         } else {
                           return DialogCard(
-                            "Salah",
+                            "Incorrect",
                             "Your Answer is Incorrect",
                             Icons.close,
                             false,
@@ -74,10 +74,11 @@ class HomeScreen extends StatelessWidget {
                         }
                       },
                     ).then((_) {
-                      if (!isCorrect) {
+                      
                         // Reset play area jika jawaban salah
+                        playAreaKey.currentState?.showAnswerFeedback(feedback);
                         playAreaKey.currentState?.resetPlayArea();
-                      }
+                      
                     });
                   },
                   style: ElevatedButton.styleFrom(

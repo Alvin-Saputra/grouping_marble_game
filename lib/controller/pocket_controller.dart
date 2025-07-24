@@ -34,8 +34,8 @@ class PocketController extends GetxController {
     for (var pocket in pockets) {
       pocket.marbleCount = 0;
       pocket.marbles.clear();
-      pocket.isCorrect = false;
-      pocket.showResult = false;
+      // pocket.isCorrect = false;
+      // pocket.showResult = false;
     }
     update();
   }

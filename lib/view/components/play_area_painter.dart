@@ -1,5 +1,6 @@
-import 'dart:ui';
+// lib/view/components/play_area_painter.dart
 
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:marble_grouping_game/model/marble.dart';
 import 'package:marble_grouping_game/model/pocket.dart';
@@ -14,17 +15,15 @@ class PlayAreaPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
 
-    // Gambar kantong
+    // Gambar kantong (kode ini tidak berubah)
     for (var eachPocket in pocket) {
       // shadow
       paint
         ..style = PaintingStyle.fill
-        ..color = eachPocket.shadowColor; // Warna shadow gelap transparan
-
-      final shadowOffset = Offset(8, 8); // Geser ke kanan dan bawah
+        ..color = eachPocket.shadowColor;
+      final shadowOffset = Offset(8, 8);
       final shadowRect = eachPocket.area.shift(shadowOffset);
-
-      canvas.drawRect(shadowRect, paint); // Gambar shadow-nya dulu
+      canvas.drawRect(shadowRect, paint);
 
       // fill
       paint
@@ -40,15 +39,19 @@ class PlayAreaPainter extends CustomPainter {
       canvas.drawRect(eachPocket.area, paint);
     }
 
+    // --- PERUBAHAN DIMULAI DI SINI ---
+    // Gambar feedback '✔' atau '✖'
     for (var eachPocket in pocket) {
-      if (!eachPocket.showResult || eachPocket.isCorrect == null)
-        continue; 
-      else if ((eachPocket.showResult == true && eachPocket.isCorrect != null)) {
+      if (eachPocket.showResult && eachPocket.isCorrect != null) {
+        IconData iconData = eachPocket.isCorrect! ? Icons.check : Icons.close;
+        Color iconColor = eachPocket.isCorrect! ? Colors.green : Colors.red;
+
         final textSpan = TextSpan(
-          text: eachPocket.isCorrect! ? '✔' : '✖',
+          text: String.fromCharCode(iconData.codePoint),
           style: TextStyle(
-            fontSize: 24,
-            color: eachPocket.isCorrect! ? Colors.green : Colors.red,
+            fontSize: 40.0, // Ukuran bisa disesuaikan
+            fontFamily: iconData.fontFamily,
+            color: iconColor,
           ),
         );
 
@@ -65,14 +68,17 @@ class PlayAreaPainter extends CustomPainter {
         tp.paint(canvas, offset);
       }
     }
+    // --- PERUBAHAN SELESAI DI SINI ---
 
-    // Gambar kelereng
+
+    // Gambar kelereng (kode ini tidak berubah)
     paint.style = PaintingStyle.fill;
     for (var marble in marbles) {
       paint.color = marble.color;
       canvas.drawCircle(marble.position, 15, paint);
     }
 
+    // Gambar kelereng di dalam pocket (kode ini tidak berubah)
     for (var eachPocket in pocket) {
       const int marblePerRow = 4;
       const double spacing = 20.0;
@@ -83,13 +89,11 @@ class PlayAreaPainter extends CustomPainter {
         final marble = eachPocket.marbles[i];
         paint.color = marble.color;
 
-        int row = i ~/ marblePerRow; // integer division untuk baris ke berapa
-        int col = i % marblePerRow; // sisa bagi untuk kolom
+        int row = i ~/ marblePerRow;
+        int col = i % marblePerRow;
 
-        // Hitung offset posisi
         Offset offset = Offset(
-          (col - (marblePerRow - 1) / 2) * spacing +
-              30, // +10 agar geser ke kanan
+          (col - (marblePerRow - 1) / 2) * spacing + 30,
           row * rowSpacing,
         );
 
