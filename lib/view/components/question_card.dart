@@ -8,7 +8,7 @@ class QuestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 4,
+      elevation: 0,
       color: Colors.deepPurple, // Warna latar belakang card
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0), // Radius sudut card

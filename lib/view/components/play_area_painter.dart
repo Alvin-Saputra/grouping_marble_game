@@ -15,19 +15,55 @@ class PlayAreaPainter extends CustomPainter {
     final paint = Paint();
 
     // Gambar kantong
-    for (var rect in pocket) {
-      // Reset ke fill untuk isi kantong
+    for (var eachPocket in pocket) {
+      // shadow
       paint
         ..style = PaintingStyle.fill
-        ..color = Colors.brown.withOpacity(0.4);
-      canvas.drawRect(rect.area, paint);
+        ..color = eachPocket.shadowColor; // Warna shadow gelap transparan
 
-      // Gambar border kantong
+      final shadowOffset = Offset(8, 8); // Geser ke kanan dan bawah
+      final shadowRect = eachPocket.area.shift(shadowOffset);
+
+      canvas.drawRect(shadowRect, paint); // Gambar shadow-nya dulu
+
+      // fill
+      paint
+        ..style = PaintingStyle.fill
+        ..color = eachPocket.fillColor;
+      canvas.drawRect(eachPocket.area, paint);
+
+      // border
       paint
         ..style = PaintingStyle.stroke
-        ..color = Colors.brown
-        ..strokeWidth = 3;
-      canvas.drawRect(rect.area, paint);
+        ..color = eachPocket.shadowColor
+        ..strokeWidth = 4;
+      canvas.drawRect(eachPocket.area, paint);
+    }
+
+    for (var eachPocket in pocket) {
+      if (!eachPocket.showResult || eachPocket.isCorrect == null)
+        continue; 
+      else if ((eachPocket.showResult == true && eachPocket.isCorrect != null)) {
+        final textSpan = TextSpan(
+          text: eachPocket.isCorrect! ? '✔' : '✖',
+          style: TextStyle(
+            fontSize: 24,
+            color: eachPocket.isCorrect! ? Colors.green : Colors.red,
+          ),
+        );
+
+        final tp = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr,
+        );
+        tp.layout();
+
+        final offset = Offset(
+          eachPocket.area.center.dx - tp.width / 2,
+          eachPocket.area.center.dy - tp.height / 2,
+        );
+        tp.paint(canvas, offset);
+      }
     }
 
     // Gambar kelereng
@@ -37,11 +73,27 @@ class PlayAreaPainter extends CustomPainter {
       canvas.drawCircle(marble.position, 15, paint);
     }
 
-    for (var marbleInPocket in pocket) {
-      // Gambar kelereng dalam kantong
-      for (var marble in marbleInPocket.marbles) {
+    for (var eachPocket in pocket) {
+      const int marblePerRow = 4;
+      const double spacing = 20.0;
+      const double rowSpacing = 25.0;
+      final topLeft = eachPocket.area.topLeft;
+
+      for (int i = 0; i < eachPocket.marbles.length; i++) {
+        final marble = eachPocket.marbles[i];
         paint.color = marble.color;
-        canvas.drawCircle(marble.position, 15, paint);
+
+        int row = i ~/ marblePerRow; // integer division untuk baris ke berapa
+        int col = i % marblePerRow; // sisa bagi untuk kolom
+
+        // Hitung offset posisi
+        Offset offset = Offset(
+          (col - (marblePerRow - 1) / 2) * spacing +
+              30, // +10 agar geser ke kanan
+          row * rowSpacing,
+        );
+
+        canvas.drawCircle(topLeft + offset, 15, paint);
       }
     }
   }

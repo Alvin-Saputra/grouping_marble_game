@@ -10,10 +10,10 @@ class PlayArea extends StatefulWidget {
   Function(Map<int, int>) getMarbleCountOnPocket;
 
   @override
-  State<PlayArea> createState() => _PlayAreaState();
+  State<PlayArea> createState() => PlayAreaState();
 }
 
-class _PlayAreaState extends State<PlayArea> {
+class PlayAreaState extends State<PlayArea> {
   final List<Pocket> listPocket = pocketList;
   List<Marble> marbles = [];
   int nextGroupId = 0;
@@ -96,6 +96,42 @@ class _PlayAreaState extends State<PlayArea> {
     });
   }
 
+  void showAnswerFeedback(Map<int, bool> feedbackMap) {
+    setState(() {
+      for (var pocket in listPocket) {
+        pocket.isCorrect = feedbackMap[pocket.id] ?? false;
+        pocket.showResult = true;
+      }
+    });
+
+    // Delay lalu update UI untuk menyembunyikan hasil
+    Future.delayed(Duration(seconds: 2), () {
+      setState(() {
+        for (var pocket in listPocket) {
+          pocket.showResult = false;
+        }
+      });
+    });
+  }
+
+  void resetPlayArea() {
+    setState(() {
+      // Kosongkan marbles & group id
+      marbles.clear();
+      nextGroupId = 0;
+
+      // Reset semua pocket
+      for (var pocket in listPocket) {
+        pocket.marbleCount = 0;
+        pocket.marbles.clear();
+      }
+
+      // Generate ulang
+      generateMarbles();
+      widget.getMarbleCountOnPocket(getPocketMarbleCounts());
+    });
+  }
+
   @override
   @override
   Widget build(BuildContext context) {
@@ -121,7 +157,7 @@ class _PlayAreaState extends State<PlayArea> {
           for (var pocket in listPocket) {
             bool allInPocket = marbles
                 .where((m) => m.groupId == groupId)
-                .every((m) => pocket.area.contains(m.position));
+                .every((m) => pocket.area.inflate(30).contains(m.position));
 
             if (allInPocket) {
               int marbleCount = marbles
