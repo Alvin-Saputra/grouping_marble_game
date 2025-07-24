@@ -16,7 +16,7 @@ class Pocket {
 }
 
 List<Pocket> pocketList = [
-  Pocket(id: 1, area: Rect.fromLTWH(10, 50, 50, 100), fillColor: Colors.orange, shadowColor: Colors.deepOrange),
-  Pocket(id: 2, area: Rect.fromLTWH(10, 200, 50, 100), fillColor: Colors.yellow, shadowColor: const Color.fromARGB(255, 252, 172, 2)),
-  Pocket(id: 3, area: Rect.fromLTWH(10, 350, 50, 100), fillColor: Colors.blue, shadowColor: const Color.fromARGB(255, 4, 98, 175)),
+  Pocket(id: 1, area: Rect.fromLTWH(10, 30, 50, 100), fillColor: Colors.orange, shadowColor: Colors.deepOrange),
+  Pocket(id: 2, area: Rect.fromLTWH(10, 180, 50, 100), fillColor: Colors.yellow, shadowColor: const Color.fromARGB(255, 252, 172, 2)),
+  Pocket(id: 3, area: Rect.fromLTWH(10, 330, 50, 100), fillColor: Colors.blue, shadowColor: const Color.fromARGB(255, 4, 98, 175)),
 ];

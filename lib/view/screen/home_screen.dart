@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:marble_grouping_game/view/components/dialog_card.dart';
-import 'package:marble_grouping_game/view/components/question_card.dart';
+import 'package:marble_grouping_game/view/components/dialog_box.dart';
+import 'package:marble_grouping_game/view/components/card_item.dart';
 import 'package:marble_grouping_game/view/components/play_area.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -21,9 +21,9 @@ class HomeScreen extends StatelessWidget {
 
   Map<int, bool> answerFeedback(Map<int, int> pocketMarbleCounts) {
     return {
-      1: pocketMarbleCounts[1] == 8, 
-      2: pocketMarbleCounts[2] == 8, 
-      3: pocketMarbleCounts[3] == 8, 
+      1: pocketMarbleCounts[1] == 8,
+      2: pocketMarbleCounts[2] == 8,
+      3: pocketMarbleCounts[3] == 8,
     };
   }
 
@@ -36,8 +36,28 @@ class HomeScreen extends StatelessWidget {
           padding: EdgeInsets.all(20.0),
           child: Column(
             children: [
-              QuestionCard(questionText: "24 ÷ 3 = "),
-              const SizedBox(height: 20),
+              CardItem(cardText: "Find the result of this following division",
+                cardColor: const Color.fromARGB(255, 183, 58, 177),
+                borderColor: const Color.fromARGB(255, 183, 58, 177),
+                borderWidth: 0,
+                borderRadius: 24,
+                textSize: 14,
+                textWeight: FontWeight.w500,
+                textColor: Colors.white,
+                verticalPadding: 8.0,),
+                SizedBox(height: 8.0),
+              CardItem(
+                cardText: "24 ÷ 3 = ",
+                cardColor: Colors.deepPurple,
+                borderColor: const Color.fromARGB(255, 50, 17, 107),
+                borderWidth: 6.0,
+                borderRadius: 8,
+                textSize: 48,
+                textWeight: FontWeight.bold,
+                textColor: Colors.white,
+                verticalPadding: 35.0,
+              ),
+              const SizedBox(height: 8.0),
               Expanded(
                 child: PlayArea(
                   key: playAreaKey,
@@ -46,14 +66,16 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
               ),
-              SizedBox(height: 20.0),
+              SizedBox(height: 10.0),
               SizedBox(
-                width: double.infinity, 
+                width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
                     bool isCorrect = checkAnswer(eachPocketMarbleCounts);
-                    Map<int, bool> feedback = answerFeedback(eachPocketMarbleCounts);
-                     
+                    Map<int, bool> feedback = answerFeedback(
+                      eachPocketMarbleCounts,
+                    );
+
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
@@ -74,11 +96,9 @@ class HomeScreen extends StatelessWidget {
                         }
                       },
                     ).then((_) {
-                      
-                        // Reset play area jika jawaban salah
-                        playAreaKey.currentState?.showAnswerFeedback(feedback);
-                        playAreaKey.currentState?.resetPlayArea();
-                      
+                      // Reset play area jika jawaban salah
+                      playAreaKey.currentState?.showAnswerFeedback(feedback);
+                      playAreaKey.currentState?.resetPlayArea();
                     });
                   },
                   style: ElevatedButton.styleFrom(
