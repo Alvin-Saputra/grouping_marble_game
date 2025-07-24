@@ -1,6 +1,8 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:marble_grouping_game/controller/marble_controller.dart';
+import 'package:marble_grouping_game/controller/pocket_controller.dart';
 import 'package:marble_grouping_game/model/marble.dart';
 import 'package:marble_grouping_game/model/pocket.dart';
 import 'package:marble_grouping_game/view/components/play_area_painter.dart';
@@ -14,55 +16,38 @@ class PlayArea extends StatefulWidget {
 }
 
 class PlayAreaState extends State<PlayArea> {
-  final List<Pocket> listPocket = pocketList;
-  List<Marble> marbles = [];
-  int nextGroupId = 0;
+  final MarbleController marbleController = Get.find<MarbleController>();
+  final PocketController pocketController = Get.find<PocketController>();
+
   Marble? selectedMarble;
-  late var canvaSize;
-  bool _marblesInitialized = false;
+  late Size canvasSize;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
   }
 
+  void _initializeGameComponents() {
+    if (_initialized) return;
+    
+    // Inisialisasi pockets terlebih dahulu
+    pocketController.initializePockets(canvasSize);
+    
+    // Kemudian generate marbles
+    generateMarbles();
+    
+    // Update marble count
+    widget.getMarbleCountOnPocket(getPocketMarbleCounts());
+    
+    _initialized = true;
+  }
+
   void generateMarbles() {
-    final rand = Random();
-    final safeDistanceFromPocket = 85.0;
-    final canvasSize = canvaSize; // Ganti sesuai ukuran sebenarnya
-    final marbleRadius = 30.0;
-
-    while (marbles.length < 24) {
-      final candidate = Offset(
-        rand.nextDouble() * (canvasSize.width - 2 * marbleRadius) +
-            marbleRadius,
-        rand.nextDouble() * (canvasSize.height - 2 * marbleRadius) +
-            marbleRadius,
-      );
-
-      // Pastikan tidak terlalu dekat dengan pocket
-      bool tooCloseToPocket = pocketList.any((pocket) {
-        final pocketCenter = pocket.area.center;
-        return (candidate - pocketCenter).distance < safeDistanceFromPocket;
-      });
-
-      if (tooCloseToPocket) continue;
-
-      // (Opsional) Pastikan tidak terlalu dekat dengan marble lain
-      bool tooCloseToMarble = marbles.any((m) {
-        return (candidate - m.position).distance < 20 * 2;
-      });
-
-      if (tooCloseToMarble) continue;
-
-      marbles.add(
-        Marble(
-          position: candidate,
-          color: Colors.primaries[marbles.length % Colors.primaries.length],
-          groupId: nextGroupId++,
-        ),
-      );
-    }
+    marbleController.generateMarbles(
+      canvasSize,
+      pocketController.pockets.map((p) => p.area).toList(),
+    );
   }
 
   void onDrag(Offset localPosition) {
@@ -71,74 +56,33 @@ class PlayAreaState extends State<PlayArea> {
     Offset delta = localPosition - selectedMarble!.position;
 
     // Gerakkan semua kelereng dalam grup yang sama
-    setState(() {
-      for (var marble in marbles) {
-        if (marble.groupId == selectedMarble!.groupId) {
-          marble.position += delta;
-        }
-      }
+    marbleController.moveGroupedMarbles(selectedMarble!, delta, localPosition);
 
-      selectedMarble!.position = localPosition;
-
-      // Cek penempelan dan gabung grup
-      for (var other in marbles) {
-        if (other == selectedMarble) continue;
-        double distance = (other.position - selectedMarble!.position).distance;
-        if (distance < 30 && other.groupId != selectedMarble!.groupId) {
-          int oldGroup = other.groupId;
-          for (var marble in marbles) {
-            if (marble.groupId == oldGroup) {
-              marble.groupId = selectedMarble!.groupId;
-            }
-          }
-        }
-      }
-    });
+    // Cek penempelan dan gabung grup
+    marbleController.groupMarblesIfNearby(selectedMarble!);
   }
 
   void showAnswerFeedback(Map<int, bool> feedbackMap) {
-    setState(() {
-      for (var pocket in listPocket) {
-        pocket.isCorrect = feedbackMap[pocket.id] ?? false;
-        pocket.showResult = true;
-      }
-    });
-
-    // Delay lalu update UI untuk menyembunyikan hasil
-    Future.delayed(Duration(seconds: 2), () {
-      setState(() {
-        for (var pocket in listPocket) {
-          pocket.showResult = false;
-        }
-      });
-    });
+    pocketController.showAnswerFeedback(feedbackMap);
   }
 
   void resetPlayArea() {
-    setState(() {
-      // Kosongkan marbles & group id
-      marbles.clear();
-      nextGroupId = 0;
-
-      // Reset semua pocket
-      for (var pocket in listPocket) {
-        pocket.marbleCount = 0;
-        pocket.marbles.clear();
-      }
-
-      // Generate ulang
-      generateMarbles();
-      widget.getMarbleCountOnPocket(getPocketMarbleCounts());
+    marbleController.resetPlayArea();
+    pocketController.resetPockets();
+    _initialized = false; // Reset flag
+    
+    // Re-initialize setelah reset
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeGameComponents();
     });
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanStart: (details) {
         final localPos = details.localPosition;
-        for (var marble in marbles) {
+        for (var marble in marbleController.marbles) {
           if ((marble.position - localPos).distance < 30) {
             selectedMarble = marble;
             break;
@@ -154,24 +98,19 @@ class PlayAreaState extends State<PlayArea> {
         if (selectedMarble != null) {
           int groupId = selectedMarble!.groupId;
 
-          for (var pocket in listPocket) {
-            bool allInPocket = marbles
+          for (var pocket in pocketController.pockets) {
+            bool allInPocket = marbleController.marbles
                 .where((m) => m.groupId == groupId)
                 .every((m) => pocket.area.inflate(30).contains(m.position));
 
             if (allInPocket) {
-              int marbleCount = marbles
+              final groupMarbles = marbleController.marbles
                   .where((m) => m.groupId == groupId)
-                  .length;
-              setState(() {
-                final groupMarbles = marbles
-                    .where((m) => m.groupId == groupId)
-                    .toList();
-                pocket.marbleCount += groupMarbles.length;
-                pocket.marbles.addAll(groupMarbles);
-                marbles.removeWhere((m) => m.groupId == groupId);
-                widget.getMarbleCountOnPocket(getPocketMarbleCounts());
-              });
+                  .toList();
+              pocket.marbleCount += groupMarbles.length;
+              pocket.marbles.addAll(groupMarbles);
+              marbleController.marbles.removeWhere((m) => m.groupId == groupId);
+              widget.getMarbleCountOnPocket(getPocketMarbleCounts());
             }
           }
         }
@@ -180,14 +119,23 @@ class PlayAreaState extends State<PlayArea> {
       },
       child: LayoutBuilder(
         builder: (context, constraints) {
-          canvaSize = Size(constraints.maxWidth, constraints.maxHeight);
-          if (!_marblesInitialized) {
-            generateMarbles();
-            _marblesInitialized = true;
-          }
-          return CustomPaint(
-            size: canvaSize,
-            painter: PlayAreaPainter(marbles, listPocket),
+          canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
+          
+          // Inisialisasi komponen game setelah ukuran canvas diketahui
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _initializeGameComponents();
+          });
+          
+          return GetBuilder<MarbleController>(
+            builder: (_) => GetBuilder<PocketController>(
+              builder: (_) => CustomPaint(
+                size: canvasSize,
+                painter: PlayAreaPainter(
+                  marbleController.marbles,
+                  pocketController.pockets,
+                ),
+              ),
+            ),
           );
         },
       ),
@@ -195,6 +143,9 @@ class PlayAreaState extends State<PlayArea> {
   }
 
   Map<int, int> getPocketMarbleCounts() {
-    return {for (var pocket in listPocket) pocket.id: pocket.marbleCount};
+    return {
+      for (var pocket in pocketController.pockets)
+        pocket.id: pocket.marbleCount,
+    };
   }
 }
