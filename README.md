@@ -2,7 +2,6 @@
 
 ## 1.Clone or Download this repository:
 - git clone https://github.com/alvin-saputra/grouping_marble_game.git
-<br>
 - cd grouping_marble_game / or open grouping_marble_game folders/directory
 
 ## 2. Get all the required dependencies:
