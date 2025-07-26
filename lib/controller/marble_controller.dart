@@ -5,60 +5,81 @@ import 'package:flutter/material.dart';
 import '../model/marble.dart';
 
 class MarbleController extends GetxController {
-  var marbles = <Marble>[].obs;
+  var marbles = <Marble>[];
   int nextGroupId = 0;
-  late Size canvasSize; // Tambahkan ini
+  late Size canvasSize; 
 
   void generateMarbles(Size size, List<Rect> pockets) {
-    canvasSize = size; // Simpan ukuran canvas
-    final rand = Random();
-    final safeDistanceFromPocket = 85.0;
-    final marbleRadius = 30.0;
-
-    while (marbles.length < 24) {
-      final candidate = Offset(
-        rand.nextDouble() * (canvasSize.width - 2 * marbleRadius) +
-            marbleRadius,
-        rand.nextDouble() * (canvasSize.height - 2 * marbleRadius) +
-            marbleRadius,
-      );
-
-      // Pastikan tidak terlalu dekat dengan pocket
-      bool tooCloseToPocket = pockets.any((pocket) {
-        final pocketCenter = pocket.center;
-        return (candidate - pocketCenter).distance < safeDistanceFromPocket;
-      });
-
-      if (tooCloseToPocket) continue;
-
-      // (Opsional) Pastikan tidak terlalu dekat dengan marble lain
-      bool tooCloseToMarble = marbles.any((m) {
-        return (candidate - m.position).distance < 20 * 2;
-      });
-
-      if (tooCloseToMarble) continue;
-
-      marbles.add(
-        Marble(
-          position: candidate,
-          color: Colors.primaries[marbles.length % Colors.primaries.length],
-          groupId: nextGroupId++,
-        ),
-      );
+    if (marbles.isNotEmpty) {
+      marbles.clear();
+      nextGroupId = 0;
     }
-     update();
+
+    canvasSize = size;
+    if (size.width <= 0 || size.height <= 0) return;
+    
+    final rand = Random();
+    final safeDistanceFromPocket = 75.0;
+    final marbleRadius = 20.0;
+
+    int totalMarblesToGenerate = 24;
+    for (int i = 0; i < totalMarblesToGenerate; i++) {
+      int attempts = 0;
+      int maxAttempts = 1000; // Batas percobaan untuk mencegah freeze
+
+      while (attempts < maxAttempts) {
+        final candidate = Offset(
+          rand.nextDouble() * (canvasSize.width - 2 * marbleRadius) +
+              marbleRadius,
+          rand.nextDouble() * (canvasSize.height - 2 * marbleRadius) +
+              marbleRadius,
+        );
+
+        bool tooCloseToPocket = pockets.any((pocket) {
+          final pocketCenter = pocket.center;
+          return (candidate - pocketCenter).distance < safeDistanceFromPocket;
+        });
+
+        if (tooCloseToPocket) {
+          attempts++;
+          continue;
+        }
+
+        bool tooCloseToMarble = marbles.any((m) {
+          return (candidate - m.position).distance < marbleRadius * 2;
+        });
+
+        if (tooCloseToMarble) {
+          attempts++;
+          continue;
+        }
+
+        marbles.add(
+          Marble(
+            position: candidate,
+            color: Colors.primaries[marbles.length % Colors.primaries.length],
+            groupId: nextGroupId++,
+          ),
+        );
+        break; 
+      }
+      
+      if (attempts >= maxAttempts) {
+        print('Peringatan: Gagal menempatkan kelereng ke-${i + 1} setelah $maxAttempts percobaan.');
+      }
+    }
+    update();
   }
 
   void moveGroupedMarbles(Marble selected, Offset delta, Offset newPosition) {
     for (var marble in marbles) {
       if (marble.groupId == selected.groupId) {
-        // Terapkan batasan pada posisi marble
         final newX = (marble.position.dx + delta.dx).clamp(15.0, canvasSize.width - 15.0);
         final newY = (marble.position.dy + delta.dy).clamp(15.0, canvasSize.height - 15.0);
         marble.position = Offset(newX, newY);
       }
     }
-    update(); // agar UI merespon perubahan
+    update(); 
   }
 
   void groupMarblesIfNearby(Marble selectedMarble) {
@@ -78,7 +99,7 @@ class MarbleController extends GetxController {
           }
         }
 
-        update(); // ini penting
+        update();
       }
     }
   }
@@ -86,6 +107,6 @@ class MarbleController extends GetxController {
   void resetPlayArea(){
     marbles.clear();
     nextGroupId = 0;
-    update(); // agar UI merespon perubahan
+    update();
   }
 }

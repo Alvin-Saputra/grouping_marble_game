@@ -15,7 +15,6 @@ class PlayAreaPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
 
-    // Gambar kantong (kode ini tidak berubah)
     for (var eachPocket in pocket) {
       // shadow
       paint
@@ -39,8 +38,6 @@ class PlayAreaPainter extends CustomPainter {
       canvas.drawRect(eachPocket.area, paint);
     }
 
-    // --- PERUBAHAN DIMULAI DI SINI ---
-    // Gambar feedback '✔' atau '✖'
     for (var eachPocket in pocket) {
       if (eachPocket.showResult && eachPocket.isCorrect != null) {
         IconData iconData = eachPocket.isCorrect! ? Icons.check : Icons.close;
@@ -49,7 +46,7 @@ class PlayAreaPainter extends CustomPainter {
         final textSpan = TextSpan(
           text: String.fromCharCode(iconData.codePoint),
           style: TextStyle(
-            fontSize: 40.0, // Ukuran bisa disesuaikan
+            fontSize: 40.0,
             fontFamily: iconData.fontFamily,
             color: iconColor,
           ),
@@ -68,17 +65,13 @@ class PlayAreaPainter extends CustomPainter {
         tp.paint(canvas, offset);
       }
     }
-    // --- PERUBAHAN SELESAI DI SINI ---
 
-
-    // Gambar kelereng (kode ini tidak berubah)
     paint.style = PaintingStyle.fill;
     for (var marble in marbles) {
       paint.color = marble.color;
       canvas.drawCircle(marble.position, 15, paint);
     }
 
-    // Gambar kelereng di dalam pocket (kode ini tidak berubah)
     for (var eachPocket in pocket) {
       const int marblePerRow = 4;
       const double spacing = 20.0;

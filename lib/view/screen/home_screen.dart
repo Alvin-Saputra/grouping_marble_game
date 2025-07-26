@@ -96,7 +96,6 @@ class HomeScreen extends StatelessWidget {
                         }
                       },
                     ).then((_) {
-                      // Reset play area jika jawaban salah
                       playAreaKey.currentState?.showAnswerFeedback(feedback);
                       playAreaKey.currentState?.resetPlayArea();
                     });
@@ -113,8 +112,8 @@ class HomeScreen extends StatelessWidget {
                           66,
                           202,
                           12,
-                        ), // Warna border
-                        width: 3, // Ketebalan border
+                        ),
+                        width: 3, 
                       ),
                     ),
                     elevation: 0,

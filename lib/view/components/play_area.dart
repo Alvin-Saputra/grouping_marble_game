@@ -31,13 +31,10 @@ class PlayAreaState extends State<PlayArea> {
   void _initializeGameComponents() {
     if (_initialized) return;
     
-    // Inisialisasi pockets terlebih dahulu
     pocketController.initializePockets(canvasSize);
     
-    // Kemudian generate marbles
     generateMarbles();
     
-    // Update marble count
     widget.getMarbleCountOnPocket(getPocketMarbleCounts());
     
     _initialized = true;
@@ -55,10 +52,8 @@ class PlayAreaState extends State<PlayArea> {
 
     Offset delta = localPosition - selectedMarble!.position;
 
-    // Gerakkan semua kelereng dalam grup yang sama
     marbleController.moveGroupedMarbles(selectedMarble!, delta, localPosition);
 
-    // Cek penempelan dan gabung grup
     marbleController.groupMarblesIfNearby(selectedMarble!);
   }
 
@@ -123,9 +118,11 @@ class PlayAreaState extends State<PlayArea> {
           canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
           
           // Inisialisasi komponen game setelah ukuran canvas diketahui
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _initializeGameComponents();
-          });
+      Future.delayed(Duration(milliseconds: 100), () {
+    if (mounted && canvasSize.width > 0 && canvasSize.height > 0) {
+      _initializeGameComponents();
+    }
+  });
           
           return GetBuilder<MarbleController>(
             builder: (_) => GetBuilder<PocketController>(
@@ -144,9 +141,6 @@ class PlayAreaState extends State<PlayArea> {
   }
 
   Map<int, int> getPocketMarbleCounts() {
-    return {
-      for (var pocket in pocketController.pockets)
-        pocket.id: pocket.marbleCount,
-    };
+   return pocketController.getPocketMarbleCounts();
   }
 }

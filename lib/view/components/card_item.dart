@@ -28,12 +28,12 @@ class CardItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      color: cardColor, // Warna latar belakang card
+      color: cardColor, 
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius), // Radius sudut card
+        borderRadius: BorderRadius.circular(borderRadius), 
         side: BorderSide(
-          color: borderColor, // Warna border
-          width: borderWidth, // Ketebalan border
+          color: borderColor, 
+          width: borderWidth, 
         ),
       ),
       child: Center(

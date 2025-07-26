@@ -3,23 +3,21 @@ import 'package:get/get.dart';
 import 'package:marble_grouping_game/model/pocket.dart';
 
 class PocketController extends GetxController {
-  var pockets = <Pocket>[].obs;
+  var pockets = <Pocket>[];
   
   @override
   void onInit() {
     super.onInit();
-    // Inisialisasi pockets akan dilakukan dari PlayArea setelah ukuran canvas diketahui
   }
 
   void initializePockets(Size canvasSize) {
-    if (pockets.isNotEmpty) return; // Cegah inisialisasi berulang
+    if (pockets.isNotEmpty) return; 
     
-    // Langsung gunakan pocketList yang sudah ada dengan posisi yang sudah didefinisikan
     for (var originalPocket in pocketList) {
-      // Copy semua properti dari pocketList tanpa mengubah posisi
+
       final pocket = Pocket(
         id: originalPocket.id,
-        area: originalPocket.area, // Gunakan posisi asli dari pocketList
+        area: originalPocket.area, 
         fillColor: originalPocket.fillColor,
         shadowColor: originalPocket.shadowColor,
         marbleCount: 0,
@@ -53,5 +51,12 @@ class PocketController extends GetxController {
       }
       update();
     });
+  }
+
+    Map<int, int> getPocketMarbleCounts() {
+    return {
+      for (var pocket in pockets)
+        pocket.id: pocket.marbleCount,
+    };
   }
 }
