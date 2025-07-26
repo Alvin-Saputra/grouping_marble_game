@@ -1,9 +1,9 @@
 # Marble Grouping Game
 
-## 1. Clone repositori ini:
-git clone https://github.com/alvin-saputra/grouping_marble_game.git
+## 1.Clone or Download this repository:
+- git clone https://github.com/alvin-saputra/grouping_marble_game.git
 <br>
-cd grouping_marble_game
+- cd grouping_marble_game / or open grouping_marble_game folders/directory
 
 ## 2. Get all the required dependencies:
 Run the following command to download all the necessary packages as defined in the pubspec.yaml file.
