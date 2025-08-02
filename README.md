@@ -1,16 +1,17 @@
-# marble_grouping_game
+# Marble Grouping Game
 
-A new Flutter project.
+## 1.Clone or Download this repository:
+- git clone https://github.com/alvin-saputra/grouping_marble_game.git
+- cd grouping_marble_game / or open grouping_marble_game folders/directory
 
-## Getting Started
+## 2. Get all the required dependencies:
+Run the following command to download all the necessary packages as defined in the pubspec.yaml file.
+- flutter pub get
 
-This project is a starting point for a Flutter application.
+## 3. Running the Application
+Once the installation is complete, you can run the application on an emulator or a physical device with the following command:
+- flutter run
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 4. Running Widgetbook
+This project uses Widgetbook to preview UI components in isolation. To run Widgetbook, use the command below:
+- flutter run -t lib/preview/widgetbook.dart
