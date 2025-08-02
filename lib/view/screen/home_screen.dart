@@ -46,16 +46,49 @@ class HomeScreen extends StatelessWidget {
                 textColor: Colors.white,
                 verticalPadding: 8.0,),
                 SizedBox(height: 8.0),
-              CardItem(
-                cardText: "24 ÷ 3 = ",
-                cardColor: Colors.deepPurple,
-                borderColor: const Color.fromARGB(255, 50, 17, 107),
-                borderWidth: 6.0,
-                borderRadius: 8,
-                textSize: 48,
-                textWeight: FontWeight.bold,
-                textColor: Colors.white,
-                verticalPadding: 35.0,
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  CardItem(
+                    cardText: "24 ÷ 3",
+                    cardColor: Colors.deepPurple,
+                    borderColor: const Color.fromARGB(255, 50, 17, 107),
+                    borderWidth: 6.0,
+                    borderRadius: 8,
+                    textSize: 48,
+                    textWeight: FontWeight.bold,
+                    textColor: Colors.white,
+                    verticalPadding: 35.0,
+                  ),
+                  Positioned(
+                    bottom: -10, // Sedikit naikkan agar tidak terlalu jauh
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      // Gunakan Center untuk menengahkan
+                      child: Container(
+                        // Bungkus dengan Container untuk memberi ukuran
+                        width: 60, // Atur lebar di sini
+                        height: 40, // Atur tinggi di sini
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 87, 34, 168),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: const Color.fromARGB(255, 50, 17, 107),
+                            width: 4.0,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.drag_handle, // Gunakan ikon yang mirip
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8.0),
               Expanded(

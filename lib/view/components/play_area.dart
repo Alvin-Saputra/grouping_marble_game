@@ -30,13 +30,13 @@ class PlayAreaState extends State<PlayArea> {
 
   void _initializeGameComponents() {
     if (_initialized) return;
-    
+
     pocketController.initializePockets(canvasSize);
-    
+
     generateMarbles();
-    
+
     widget.getMarbleCountOnPocket(getPocketMarbleCounts());
-    
+
     _initialized = true;
   }
 
@@ -47,15 +47,15 @@ class PlayAreaState extends State<PlayArea> {
     );
   }
 
-  void onDrag(Offset localPosition) {
-    if (selectedMarble == null) return;
+  // void onDrag(Offset localPosition) {
+  //   if (selectedMarble == null) return;
 
-    Offset delta = localPosition - selectedMarble!.position;
+  //   Offset delta = localPosition - selectedMarble!.position;
 
-    marbleController.moveGroupedMarbles(selectedMarble!, delta, localPosition);
+  //   marbleController.moveGroupedMarbles(selectedMarble!, delta, localPosition);
 
-    marbleController.groupMarblesIfNearby(selectedMarble!);
-  }
+  //   marbleController.groupMarblesIfNearby(selectedMarble!);
+  // }
 
   void showAnswerFeedback(Map<int, bool> feedbackMap) {
     pocketController.showAnswerFeedback(feedbackMap);
@@ -65,7 +65,7 @@ class PlayAreaState extends State<PlayArea> {
     marbleController.resetPlayArea();
     pocketController.resetPockets();
     _initialized = false; // Reset flag
-    
+
     // Re-initialize setelah reset
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeGameComponents();
@@ -86,7 +86,12 @@ class PlayAreaState extends State<PlayArea> {
       },
       onPanUpdate: (details) {
         if (selectedMarble != null) {
-          onDrag(details.localPosition);
+          // onDrag(details.localPosition);
+          marbleController.arrangeMarblesInPattern(
+            selectedMarble!,
+            details.localPosition,
+          );
+          marbleController.groupMarblesIfNearby(selectedMarble!);
         }
       },
       onPanEnd: (_) {
@@ -106,7 +111,7 @@ class PlayAreaState extends State<PlayArea> {
               pocket.marbles.addAll(groupMarbles);
               marbleController.marbles.removeWhere((m) => m.groupId == groupId);
               widget.getMarbleCountOnPocket(getPocketMarbleCounts());
-              pocketController.update(); 
+              pocketController.update();
             }
           }
         }
@@ -116,14 +121,14 @@ class PlayAreaState extends State<PlayArea> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
-          
+
           // Inisialisasi komponen game setelah ukuran canvas diketahui
-      Future.delayed(Duration(milliseconds: 100), () {
-    if (mounted && canvasSize.width > 0 && canvasSize.height > 0) {
-      _initializeGameComponents();
-    }
-  });
-          
+          Future.delayed(Duration(milliseconds: 100), () {
+            if (mounted && canvasSize.width > 0 && canvasSize.height > 0) {
+              _initializeGameComponents();
+            }
+          });
+
           return GetBuilder<MarbleController>(
             builder: (_) => GetBuilder<PocketController>(
               builder: (_) => CustomPaint(
@@ -141,6 +146,6 @@ class PlayAreaState extends State<PlayArea> {
   }
 
   Map<int, int> getPocketMarbleCounts() {
-   return pocketController.getPocketMarbleCounts();
+    return pocketController.getPocketMarbleCounts();
   }
 }

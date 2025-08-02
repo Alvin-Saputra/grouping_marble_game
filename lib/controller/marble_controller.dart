@@ -7,7 +7,7 @@ import '../model/marble.dart';
 class MarbleController extends GetxController {
   var marbles = <Marble>[];
   int nextGroupId = 0;
-  late Size canvasSize; 
+  late Size canvasSize;
 
   void generateMarbles(Size size, List<Rect> pockets) {
     if (marbles.isNotEmpty) {
@@ -17,7 +17,7 @@ class MarbleController extends GetxController {
 
     canvasSize = size;
     if (size.width <= 0 || size.height <= 0) return;
-    
+
     final rand = Random();
     final safeDistanceFromPocket = 75.0;
     final marbleRadius = 20.0;
@@ -61,25 +61,82 @@ class MarbleController extends GetxController {
             groupId: nextGroupId++,
           ),
         );
-        break; 
+        break;
       }
-      
+
       if (attempts >= maxAttempts) {
-        print('Peringatan: Gagal menempatkan kelereng ke-${i + 1} setelah $maxAttempts percobaan.');
+        print(
+          'Peringatan: Gagal menempatkan kelereng ke-${i + 1} setelah $maxAttempts percobaan.',
+        );
       }
     }
+    update();
+  }
+
+  void arrangeMarblesInPattern(Marble draggedMarble, Offset dragPosition) {
+    // 1. Dapatkan semua kelereng dalam grup
+    final group = marbles
+        .where((m) => m.groupId == draggedMarble.groupId)
+        .toList();
+    final count = group.length;
+
+    // Jika hanya satu kelereng, posisinya langsung mengikuti kursor
+    if (count <= 1) {
+      draggedMarble.position = dragPosition;
+      update();
+      return;
+    }
+
+    // 2. Hitung pergeseran (delta) dari kelereng yang disentuh
+    final delta = dragPosition - draggedMarble.position;
+
+    // 3. Hitung posisi pusat grup (centroid) saat ini
+    double totalX = 0;
+    double totalY = 0;
+    for (var marble in group) {
+      totalX += marble.position.dx;
+      totalY += marble.position.dy;
+    }
+    final currentCenter = Offset(totalX / count, totalY / count);
+
+    // 4. Tentukan posisi pusat yang baru untuk pola tersebut
+    final newPatternCenter = currentCenter + delta;
+
+    // 5. Atur ulang posisi SEMUA kelereng dalam bentuk poligon di sekitar pusat baru
+    const double distance =
+        20.0; // Jarak dari pusat ke setiap kelereng (jari-jari)
+    final double angleIncrement = 2 * pi / count;
+    // Opsional: Tambahkan sudut awal agar poligon tidak selalu menghadap ke arah yang sama
+    const double startAngle = pi / 2; // misal: 90 derajat
+
+    for (int i = 0; i < count; i++) {
+      final angle = startAngle + (angleIncrement * i);
+      final offsetX = distance * cos(angle);
+      final offsetY = distance * sin(angle);
+      group[i].position = Offset(
+        newPatternCenter.dx + offsetX,
+        newPatternCenter.dy + offsetY,
+      );
+    }
+
     update();
   }
 
   void moveGroupedMarbles(Marble selected, Offset delta, Offset newPosition) {
     for (var marble in marbles) {
       if (marble.groupId == selected.groupId) {
-        final newX = (marble.position.dx + delta.dx).clamp(15.0, canvasSize.width - 15.0);
-        final newY = (marble.position.dy + delta.dy).clamp(15.0, canvasSize.height - 15.0);
+        final newX = (marble.position.dx + delta.dx).clamp(
+          15.0,
+          canvasSize.width - 15.0,
+        );
+        final newY = (marble.position.dy + delta.dy).clamp(
+          15.0,
+          canvasSize.height - 15.0,
+        );
         marble.position = Offset(newX, newY);
       }
     }
-    update(); 
+    update();
   }
 
   void groupMarblesIfNearby(Marble selectedMarble) {
@@ -98,13 +155,13 @@ class MarbleController extends GetxController {
             marble.groupId = newGroupId;
           }
         }
-
+         arrangeMarblesInPattern(selectedMarble, selectedMarble.position);
         update();
       }
     }
   }
 
-  void resetPlayArea(){
+  void resetPlayArea() {
     marbles.clear();
     nextGroupId = 0;
     update();
