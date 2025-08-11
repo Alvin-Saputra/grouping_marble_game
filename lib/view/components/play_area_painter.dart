@@ -166,7 +166,7 @@ class PlayAreaPainter extends CustomPainter {
 
      final linePaint = Paint()
       ..color = Colors.white.withOpacity(0.8)
-      ..strokeWidth = 2.0
+      ..strokeWidth = 0.5
       ..style = PaintingStyle.stroke;
 
     final groupIds = marbles.map((m) => m.groupId).toSet();
