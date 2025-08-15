@@ -1,3 +1,5 @@
+// lib/controller/pocket_controller.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:marble_grouping_game/model/pocket.dart';
@@ -43,13 +45,13 @@ class PocketController extends GetxController {
       pocket.isCorrect = feedbackMap[pocket.id] ?? false;
       pocket.showResult = true;
     }
-    update();
+    update(); // <--- TAMBAHKAN BARIS INI
 
     Future.delayed(Duration(seconds: 2), () {
       for (var pocket in pockets) {
         pocket.showResult = false;
       }
-      update();
+      update(); // <--- DAN JUGA DI SINI
     });
   }
 

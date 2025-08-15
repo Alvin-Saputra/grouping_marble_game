@@ -104,13 +104,13 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                 child: Stack(
                   children: [
-                    Obx(
-                      () => Stack(
-                        children: pocketController.pockets.map((pocket) {
-                          return _buildPocketWidget(pocket);
-                        }).toList(),
-                      ),
-                    ),
+                    GetBuilder<PocketController>(
+              builder: (controller) => Stack(
+                children: controller.pockets.map((pocket) {
+                  return _buildPocketWidget(pocket);
+                }).toList(),
+              ),
+            ),
                     PlayArea(
                       key: playAreaKey,
                       getMarbleCountOnPocket:
@@ -241,13 +241,7 @@ Widget _buildPocketWidget(Pocket pocket) {
                 pocket.isCorrect! ? Icons.check_circle : Icons.cancel,
                 color: pocket.isCorrect! ? Colors.green.shade700 : Colors.red.shade700,
                 size: 50.0, // Sesuaikan ukuran ikon
-                shadows: [ // Tambahkan sedikit shadow agar ikon lebih menonjol
-                  Shadow(
-                    color: Colors.black.withOpacity(0.5),
-                    blurRadius: 4,
-                    offset: Offset(2, 2),
-                  )
-                ],
+               
               )
             : SizedBox.shrink(),
         // child: Text(pocket.marbleCount.toString()),
