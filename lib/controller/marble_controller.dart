@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import '../model/marble.dart';
@@ -8,6 +7,8 @@ class MarbleController extends GetxController {
   var marbles = <Marble>[];
   int nextGroupId = 0;
   late Size canvasSize;
+
+  final Map<int, double> _groupAngles = {};
 
   void generateMarbles(Size size, List<Rect> pockets) {
     if (marbles.isNotEmpty) {
@@ -18,6 +19,13 @@ class MarbleController extends GetxController {
     canvasSize = size;
     if (size.width <= 0 || size.height <= 0) return;
 
+    final List<Color> colorPalette = [
+      Colors.red,
+      Colors.blue,
+      Colors.green,
+      Colors.yellow,
+    ];
+
     final rand = Random();
     final safeDistanceFromPocket = 75.0;
     final marbleRadius = 20.0;
@@ -25,7 +33,7 @@ class MarbleController extends GetxController {
     int totalMarblesToGenerate = 24;
     for (int i = 0; i < totalMarblesToGenerate; i++) {
       int attempts = 0;
-      int maxAttempts = 1000; // Batas percobaan untuk mencegah freeze
+      int maxAttempts = 1000;
 
       while (attempts < maxAttempts) {
         final candidate = Offset(
@@ -57,7 +65,7 @@ class MarbleController extends GetxController {
         marbles.add(
           Marble(
             position: candidate,
-            color: Colors.primaries[marbles.length % Colors.primaries.length],
+            color: colorPalette[marbles.length % colorPalette.length],
             groupId: nextGroupId++,
           ),
         );
@@ -73,72 +81,49 @@ class MarbleController extends GetxController {
     update();
   }
 
-  void arrangeMarblesInPattern(Marble draggedMarble, Offset dragPosition) {
-    // 1. Dapatkan semua kelereng dalam grup
-    final group = marbles
-        .where((m) => m.groupId == draggedMarble.groupId)
-        .toList();
+  /// Mengatur ulang posisi SEMUA kelereng dalam grup ke dalam formasi poligon
+  /// di sekitar posisi jari pengguna.
+void arrangeMarblesInPattern(Marble draggedMarble, Offset dragPosition) {
+    final group = marbles.where((m) => m.groupId == draggedMarble.groupId).toList();
+    if (group.isEmpty) return;
+
+    // ==========================================================
+    // LOGIKA BARU UNTUK ROTASI PADA PUSAT GRUP
+    // ==========================================================
+
+    // 1. Tentukan posisi pusat grup yang baru.
+    //    Pusat grup akan mengikuti posisi jari pengguna.
+    final newCenter = dragPosition;
+
+    // 2. Tambahkan sedikit rotasi untuk animasi orbit
+    _groupAngles.putIfAbsent(draggedMarble.groupId, () => 0.0);
+    _groupAngles[draggedMarble.groupId] = (_groupAngles[draggedMarble.groupId]! + 0.015) % (2 * pi); // Sedikit lebih cepat
+    final currentAngle = _groupAngles[draggedMarble.groupId]!;
+    
+    // 3. Atur ulang posisi SEMUA kelereng dalam grup di sekitar pusat baru
     final count = group.length;
-
-    // Jika hanya satu kelereng, posisinya langsung mengikuti kursor
     if (count <= 1) {
-      draggedMarble.position = dragPosition;
-      update();
-      return;
+        draggedMarble.position = dragPosition;
+        update();
+        return;
     }
 
-    // 2. Hitung pergeseran (delta) dari kelereng yang disentuh
-    final delta = dragPosition - draggedMarble.position;
-
-    // 3. Hitung posisi pusat grup (centroid) saat ini
-    double totalX = 0;
-    double totalY = 0;
-    for (var marble in group) {
-      totalX += marble.position.dx;
-      totalY += marble.position.dy;
-    }
-    final currentCenter = Offset(totalX / count, totalY / count);
-
-    // 4. Tentukan posisi pusat yang baru untuk pola tersebut
-    final newPatternCenter = currentCenter + delta;
-
-    // 5. Atur ulang posisi SEMUA kelereng dalam bentuk poligon di sekitar pusat baru
-    const double distance =
-        20.0; // Jarak dari pusat ke setiap kelereng (jari-jari)
+    const double distance = 25.0; // Jarak dari pusat ke setiap kelereng
     final double angleIncrement = 2 * pi / count;
-    // Opsional: Tambahkan sudut awal agar poligon tidak selalu menghadap ke arah yang sama
-    const double startAngle = pi / 2; // misal: 90 derajat
 
     for (int i = 0; i < count; i++) {
-      final angle = startAngle + (angleIncrement * i);
+      final angle = currentAngle + (angleIncrement * i);
       final offsetX = distance * cos(angle);
       final offsetY = distance * sin(angle);
-      group[i].position = Offset(
-        newPatternCenter.dx + offsetX,
-        newPatternCenter.dy + offsetY,
-      );
+      // Atur posisi setiap kelereng di grup relatif terhadap pusat baru
+      group[i].position = newCenter + Offset(offsetX, offsetY);
     }
+    // ==========================================================
 
     update();
-  }
+}
 
-  void moveGroupedMarbles(Marble selected, Offset delta, Offset newPosition) {
-    for (var marble in marbles) {
-      if (marble.groupId == selected.groupId) {
-        final newX = (marble.position.dx + delta.dx).clamp(
-          15.0,
-          canvasSize.width - 15.0,
-        );
-        final newY = (marble.position.dy + delta.dy).clamp(
-          15.0,
-          canvasSize.height - 15.0,
-        );
-        marble.position = Offset(newX, newY);
-      }
-    }
-    update();
-  }
-
+  /// Menggabungkan kelereng jika jaraknya berdekatan.
   void groupMarblesIfNearby(Marble selectedMarble) {
     for (var other in marbles) {
       if (other == selectedMarble) continue;
@@ -146,7 +131,7 @@ class MarbleController extends GetxController {
       final double distance =
           (other.position - selectedMarble.position).distance;
 
-      if (distance < 30 && other.groupId != selectedMarble.groupId) {
+      if (distance < 40 && other.groupId != selectedMarble.groupId) { // Jarak grouping sedikit diperbesar
         int oldGroupId = other.groupId;
         int newGroupId = selectedMarble.groupId;
 
@@ -155,12 +140,16 @@ class MarbleController extends GetxController {
             marble.groupId = newGroupId;
           }
         }
-         arrangeMarblesInPattern(selectedMarble, selectedMarble.position);
-        update();
+        
+        // Panggil arrangeMarblesInPattern lagi setelah grouping agar kelereng baru
+        // langsung "melompat" ke dalam formasi poligon.
+        arrangeMarblesInPattern(selectedMarble, selectedMarble.position);
+        return; // Keluar setelah satu grup digabungkan untuk efisiensi
       }
     }
   }
 
+  /// Mengosongkan area permainan.
   void resetPlayArea() {
     marbles.clear();
     nextGroupId = 0;

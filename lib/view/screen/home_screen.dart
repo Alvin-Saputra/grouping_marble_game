@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:marble_grouping_game/controller/marble_controller.dart';
+import 'package:marble_grouping_game/controller/pocket_controller.dart';
+import 'package:marble_grouping_game/model/pocket.dart';
 import 'package:marble_grouping_game/view/components/dialog_box.dart';
 import 'package:marble_grouping_game/view/components/card_item.dart';
 import 'package:marble_grouping_game/view/components/play_area.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
+  final MarbleController marbleController = Get.find<MarbleController>();
+  final PocketController pocketController = Get.find<PocketController>();
 
   late Map<int, int> eachPocketMarbleCounts = {};
   final GlobalKey<PlayAreaState> playAreaKey = GlobalKey<PlayAreaState>();
@@ -30,29 +38,31 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: const Color(0xFFF2B9EC),
+      backgroundColor: const Color.fromARGB(255, 255, 197, 248),
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(20.0),
           child: Column(
             children: [
-              CardItem(cardText: "Find the result of this following division",
+              CardItem(
+                cardText: "Find the result of this following division",
                 cardColor: const Color.fromARGB(255, 183, 58, 177),
-                borderColor: const Color.fromARGB(255, 183, 58, 177),
+                // shadowColor: const Color.fromARGB(255, 183, 58, 177),
                 borderWidth: 0,
                 borderRadius: 24,
                 textSize: 14,
                 textWeight: FontWeight.w500,
                 textColor: Colors.white,
-                verticalPadding: 8.0,),
-                SizedBox(height: 8.0),
+                verticalPadding: 8.0,
+              ),
+              SizedBox(height: 8.0),
               Stack(
                 clipBehavior: Clip.none,
                 children: [
                   CardItem(
                     cardText: "24 ÷ 3",
                     cardColor: Colors.deepPurple,
-                    borderColor: const Color.fromARGB(255, 50, 17, 107),
+                    shadowColor: const Color.fromARGB(255, 50, 17, 107),
                     borderWidth: 6.0,
                     borderRadius: 8,
                     textSize: 48,
@@ -92,71 +102,106 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8.0),
               Expanded(
-                child: PlayArea(
-                  key: playAreaKey,
-                  getMarbleCountOnPocket: (Map<int, int> pocketMarbleCount) {
-                    eachPocketMarbleCounts = pocketMarbleCount;
-                  },
+                child: Stack(
+                  children: [
+                    Obx(
+                      () => Stack(
+                        children: pocketController.pockets.map((pocket) {
+                          return _buildPocketWidget(pocket);
+                        }).toList(),
+                      ),
+                    ),
+                    PlayArea(
+                      key: playAreaKey,
+                      getMarbleCountOnPocket:
+                          (Map<int, int> pocketMarbleCount) {
+                            eachPocketMarbleCounts = pocketMarbleCount;
+                          },
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 10.0),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    bool isCorrect = checkAnswer(eachPocketMarbleCounts);
-                    Map<int, bool> feedback = answerFeedback(
-                      eachPocketMarbleCounts,
-                    );
-
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        if (isCorrect) {
-                          return DialogCard(
-                            "Correct",
-                            "Your Answer is Correct",
-                            Icons.check,
-                            true,
-                          );
-                        } else {
-                          return DialogCard(
-                            "Incorrect",
-                            "Your Answer is Incorrect",
-                            Icons.close,
-                            false,
-                          );
-                        }
-                      },
-                    ).then((_) {
-                      playAreaKey.currentState?.showAnswerFeedback(feedback);
-                      playAreaKey.currentState?.resetPlayArea();
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 144, 238, 36),
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      side: BorderSide(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(
+                      24,
+                    ), // Samakan dengan bentuk tombol
+                    boxShadow: [
+                      BoxShadow(
                         color: const Color.fromARGB(
                           255,
-                          66,
-                          202,
-                          12,
-                        ),
-                        width: 3, 
+                          37,
+                          134,
+                          4,
+                        ), // Warna shadow
+                        spreadRadius: 1,
+                        blurRadius:
+                            0, // blurRadius: 0 akan membuat shadow menjadi solid
+                        offset: Offset(
+                          4,
+                          4,
+                        ), // Posisi shadow (4px ke kanan, 4px ke bawah)
                       ),
-                    ),
-                    elevation: 0,
+                    ],
                   ),
-                  child: Text(
-                    "Check Answer",
-                    style: TextStyle(
-                      color: const Color.fromARGB(255, 2, 116, 12),
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      bool isCorrect = checkAnswer(eachPocketMarbleCounts);
+                      Map<int, bool> feedback = answerFeedback(
+                        eachPocketMarbleCounts,
+                      );
+
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          if (isCorrect) {
+                            return DialogCard(
+                              "Correct",
+                              "Your Answer is Correct",
+                              Icons.check,
+                              true,
+                            );
+                          } else {
+                            return DialogCard(
+                              "Incorrect",
+                              "Your Answer is Incorrect",
+                              Icons.close,
+                              false,
+                            );
+                          }
+                        },
+                      ).then((_) {
+                         pocketController.showAnswerFeedback(feedback);
+                        playAreaKey.currentState?.resetPlayArea();
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 36, 238, 103),
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        side: BorderSide(
+                          color: const Color.fromARGB(255, 36, 238, 103),
+                          width: 3,
+                        ),
+                      ),
+                      elevation: 8, // Atur ketinggian shadow
+                      shadowColor: const Color.fromARGB(255, 15, 153, 61).withOpacity(0.5),
+                    ),
+                    child: Text(
+                      "Check Answer",
+                      style: TextStyle(
+                        color: const Color.fromARGB(255, 2, 116, 12),
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -167,4 +212,46 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _buildPocketWidget(Pocket pocket) {
+  return Positioned(
+    top: pocket.area.top,
+    left: pocket.area.left,
+    width: pocket.area.width,
+    height: pocket.area.height,
+    child: Container(
+      decoration: BoxDecoration(
+        color: pocket.fillColor,
+        borderRadius: BorderRadius.circular(8),
+        // border: Border.all(color: pocket.shadowColor, width: 4),
+        boxShadow: [
+          BoxShadow(
+            color: pocket.shadowColor,
+            offset: const Offset(4, 4),
+            blurRadius: 0,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      // Child di sini bisa untuk menampilkan jumlah kelereng jika mau
+      child: Center(
+        child: (pocket.showResult && pocket.isCorrect != null)
+            ? Icon(
+                pocket.isCorrect! ? Icons.check_circle : Icons.cancel,
+                color: pocket.isCorrect! ? Colors.green.shade700 : Colors.red.shade700,
+                size: 50.0, // Sesuaikan ukuran ikon
+                shadows: [ // Tambahkan sedikit shadow agar ikon lebih menonjol
+                  Shadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 4,
+                    offset: Offset(2, 2),
+                  )
+                ],
+              )
+            : SizedBox.shrink(),
+        // child: Text(pocket.marbleCount.toString()),
+      ),
+    ),
+  );
 }

@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:marble_grouping_game/model/pocket.dart';
 
 class PocketController extends GetxController {
-  var pockets = <Pocket>[];
+  var pockets = <Pocket>[].obs;
   
   @override
   void onInit() {

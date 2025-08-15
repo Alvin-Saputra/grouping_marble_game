@@ -1,44 +1,49 @@
 import 'package:flutter/material.dart';
 
 class CardItem extends StatelessWidget {
-  CardItem({
+  const CardItem({
+    super.key,
     required this.cardText,
     required this.cardColor,
-    required this.borderColor,
     required this.borderWidth,
     required this.borderRadius,
     required this.textSize,
     required this.textWeight,
     required this.textColor,
     required this.verticalPadding,
-    super.key,
+    this.shadowColor, // tidak required, bisa null
   });
 
   final String cardText;
   final Color cardColor;
-  final Color borderColor;
   final double borderWidth;
   final double borderRadius;
   final double textSize;
   final FontWeight textWeight;
   final Color textColor;
   final double verticalPadding;
+  final Color? shadowColor; // nullable
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: cardColor, 
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius), 
-        side: BorderSide(
-          color: borderColor, 
-          width: borderWidth, 
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(borderRadius),
+        boxShadow: shadowColor != null
+            ? [
+                BoxShadow(
+                  color: shadowColor!,
+                  offset: const Offset(4, 4),
+                  blurRadius: 0,
+                  spreadRadius: 2,
+                ),
+              ]
+            : [], // kalau null → tidak ada shadow
       ),
-      child: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: verticalPadding),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: verticalPadding),
+        child: Center(
           child: Text(
             cardText,
             style: TextStyle(

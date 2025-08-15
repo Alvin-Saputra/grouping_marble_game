@@ -53,7 +53,7 @@ class HotReload extends StatelessWidget {
                 child: CardItem(
                   cardText: "24 ÷ 3 = ",
                   cardColor: Colors.deepPurple,
-                  borderColor: const Color.fromARGB(255, 50, 17, 107),
+                  shadowColor: const Color.fromARGB(255, 50, 17, 107),
                   borderWidth: 6.0,
                   borderRadius: 8,
                   textSize: 48,
